@@ -56,7 +56,7 @@ def load_synthetic_models(filepath, dataset='test'):
 
 
 
-def load_model(model_name, input_shape, output_shape,
+def load_model(model_name, input_shape, 
 				dropout_status=True, l2_status=True, bn_status=True):
 
 	# import model
@@ -108,8 +108,50 @@ def backprop(X, params, layer='output', class_index=None, batch_size=128, method
 
 
 
-def entropy_weighted_cosine_distance(X_saliency, X_model):
-	"""calculate entropy-weighted cosine distance between normalized saliency map and model"""
+def smooth_backprop(X, params, layer='output', class_index=None, batch_size=128, num_average=100):
+    """wrapper for backprop/guided-backpro saliency"""
+
+
+    saliency = np.zeros(X.shape)
+    for i, x in enumerate(X):
+        if np.mod(i,200) == 0:
+            print('%d out of %d'%(i, len(X)))
+
+        if np.mod(i,50) == 0:
+            tf.reset_default_graph()
+
+            # build new graph
+            model_layers, optimization, genome_model = load_model(params['model_name'], params['input_shape'], 
+                                                           params['dropout_status'], params['l2_status'], params['bn_status'])
+
+            nnmodel = nn.NeuralNet()
+            nnmodel.build_layers(model_layers, optimization, method='backprop', use_scope=True)
+            nntrainer = nn.NeuralTrainer(nnmodel, save='best', filepath=params['model_path'])
+
+            # setup session and restore optimal parameters
+            sess = utils.initialize_session(nnmodel.placeholders)
+            nntrainer.set_best_parameters(sess, params['model_path'], verbose=0)
+
+            # backprop saliency
+            if layer == 'output':
+                layer = list(nnmodel.network.keys())[-2]
+
+        x = np.expand_dims(x, axis=0)
+        shape = list(x.shape)
+        shape[0] = num_average
+        
+        noisy_saliency = nntrainer.get_saliency(sess, x+np.random.normal(scale=0.1, size=shape), nnmodel.network[layer], class_index=class_index, batch_size=num_average)
+        saliency[i,:,:,:] = np.mean(noisy_saliency, axis=0)
+
+        #if np.mod(i,99) == 0:
+        #   sess.close()
+        #   tf.reset_default_graph()
+
+    return saliency
+
+
+def entropy_weighted_distance(X_saliency, X_model):
+	"""calculate entropy-weighted distance between normalized saliency map and model"""
 	def cosine_distance(X_norm, X_model):
 		norm1 = np.sqrt(np.sum(X_norm**2, axis=0))
 		norm2 = np.sqrt(np.sum(X_model**2, axis=0))
@@ -131,3 +173,6 @@ def entropy_weighted_cosine_distance(X_saliency, X_model):
 	fpr = np.sum(inv_cd*inv_model_info)/np.sum(inv_model_info)
 
 	return tpr, fpr
+
+
+

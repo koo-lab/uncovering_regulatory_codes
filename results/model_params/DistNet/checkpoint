@@ -1,2 +1,0 @@
-model_checkpoint_path: "DeepNet_best.ckpt"
-all_model_checkpoint_paths: "DeepNet_best.ckpt"
