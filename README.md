@@ -34,8 +34,10 @@ To evaluate the performance of each model on the test set:
 * code/2_print_performance.py 
 
 To quantify interpretability:
-* code/3_interpretability_analysis.py
+* code/3_interpretability_analysis_all_models.py
+* code/3_interpretability_analysis_single_model.py
 The output is a pickle file that contains a dictionary of the results.
+
 
 
 ## Overview of data

@@ -57,6 +57,13 @@ l2_status =      True
 bn_status =      True
 noise =          False
 
+
+batch_size = 50
+verbose = 2
+num_epochs = 100
+num_clean_epochs = 20
+
+
 # save path
 results_path = '../results'
 params_path = utils.make_directory(results_path, 'model_params')
@@ -127,10 +134,6 @@ x_train = train['inputs']
 y_train = train['targets']
 
 
-batch_size = 50
-verbose = 2
-num_epochs = 100
-num_clean_epochs = 20
 for epoch in range(num_epochs):
     print(epoch)
     index = np.random.permutation(len(x_train))
