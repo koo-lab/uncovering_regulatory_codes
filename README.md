@@ -18,20 +18,25 @@ To generate datasets:
 Default is: In [9]: num_seq = 30000
 To make smaller dataset, change this to 10000
 
-To train the models on the synthetic dataset: 
-* code/1_train_models.py 
+To train all models on the synthetic dataset (without/with regularization and with gaussian noise): 
+* code/1_train_all_models.py 
+
+To train all models on the synthetic dataset (with adversarial training):
+* code/1_train_all_models_adv.py 
 
 These scripts loop through all models described in the manuscript.  Each model can be found in /code/models/
+
+To train a single model on synthetic dataset, use:
+* code/train_single_model.py 
+* code/train_single_model_adv.py 
 
 To evaluate the performance of each model on the test set: 
 * code/2_print_performance.py 
 
-To quantify interpretability with TPS and FPS scores, run:
+To quantify interpretability:
 * code/3_interpretability_analysis.py
 The output is a pickle file that contains a dictionary of the results.
 
-To train, test, and analyze interpretability of models with adversarial training, run the notebook:
-* code/4_Adversarial_training.ipynb
 
 ## Overview of data
 
@@ -41,7 +46,7 @@ To train, test, and analyze interpretability of models with adversarial training
 ## Overview of results
 
 * All results for each CNN model and dataset are saved in a results directory. 
-* Trained model parameters are saved in results/model_params.  
+* Trained model parameters are saved in results/model_params. 
 * A reported performance table is saved in results/performance_summary.tsv (automatically outputted from 2_print_performance.py)
 
 

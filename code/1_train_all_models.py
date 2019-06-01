@@ -4,30 +4,28 @@ from __future__ import print_function
 
 import os, sys
 import numpy as np
+import matplotlib.pyplot as plt
 import helper
 import tensorflow as tf
 from deepomics import neuralnetwork as nn
-from deepomics import utils, fit
+from deepomics import utils, fit, visualize
 
 #------------------------------------------------------------------------------------------------
 
-all_models = ['DistNet', 'LocalNet'] # 'StandardNet', 'DeepBind', 
 
-# regularization settings
+all_models = ['DistNet', 'LocalNet'] 
 dropout_status = [True, False]
 l2_status =      [True, False]
 bn_status =      [True, False]
+noise_status =   [False, True]
 
-# add gaussian noise
-add_noise =      [True, False]
 
 # save path
 results_path = '../results'
 params_path = utils.make_directory(results_path, 'model_params')
 
-#------------------------------------------------------------------------------------------------
 
-# load dataset
+# dataset path
 data_path = '../data/Synthetic_dataset.h5'
 train, valid, test = helper.load_synthetic_dataset(data_path)
 
@@ -35,11 +33,10 @@ train, valid, test = helper.load_synthetic_dataset(data_path)
 input_shape = list(train['inputs'].shape)
 input_shape[0] = None
 
-#-------------------------------------------------------------------------------------
-# train models
-
 for i in range(len(dropout_status)):
+
     for noise in noise_status:
+        # loop through models
         for model_name in all_models:
             tf.reset_default_graph()
             print('model: ' + model_name)
@@ -55,7 +52,8 @@ for i in range(len(dropout_status)):
             if noise:
                 name += '_noise'
 
-            file_path = os.path.join(params_path, name)
+            model_path = utils.make_directory(params_path, model_name)
+            file_path = os.path.join(model_path, name)
 
             # load model parameters
             model_layers, optimization, _ = helper.load_model(model_name, 
@@ -65,7 +63,7 @@ for i in range(len(dropout_status)):
                                                               bn_status[i])
 
             # build neural network class
-            nnmodel = nn.NeuralNet(seed=247)
+            nnmodel = nn.NeuralNet()
             nnmodel.build_layers(model_layers, optimization, supervised=True)
 
             nntrainer = nn.NeuralTrainer(nnmodel, save='best', file_path=file_path)
@@ -75,11 +73,11 @@ for i in range(len(dropout_status)):
 
             # set data in dictionary
             data = {'train': train, 'valid': valid, 'test': test}
-        
+
             # set data in dictionary
             num_epochs = 200
             batch_size = 100
-            patience = 20
+            patience = 25
             verbose = 2
             shuffle = True
             for epoch in range(num_epochs):
@@ -89,14 +87,12 @@ for i in range(len(dropout_status)):
                     if epoch % 10 == 0:
                         sys.stdout.write("\rEpoch %d out of %d \n"%(epoch+1,num_epochs))
 
-                # add noise to inputs
-                if noise:       
+                # training set
+                if noise:
                     noisy_train = {'inputs': train['inputs'] + np.random.normal(scale=0.1, size=train['inputs'].shape),
                                    'targets': train['targets']}
                 else:
                     noisy_train = train
-
-                # train epoch
                 train_loss = nntrainer.train_epoch(sess, noisy_train,
                                                     batch_size=batch_size,
                                                     verbose=verbose,
@@ -113,5 +109,3 @@ for i in range(len(dropout_status)):
                 # early stopping
                 if not nntrainer.early_stopping(loss, patience):
                     break
-
-            nntrainer.save_model(sess, addon='last')

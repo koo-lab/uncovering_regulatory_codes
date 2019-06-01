@@ -4,31 +4,31 @@ from __future__ import print_function
 
 import os, sys
 import numpy as np
-import helper
+from six.moves import cPickle
+import matplotlib.pyplot as plt
+
 import tensorflow as tf
 from deepomics import neuralnetwork as nn
-from deepomics import utils, metrics
-#------------------------------------------------------------------------------------------------
+from deepomics import utils, fit, visualize, saliency, metrics
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, accuracy_score, roc_auc_score
+import helper
+np.random.seed(247)
+tf.set_random_seed(247)
 
-all_models = ['DistNet', 'LocalNet'] # 'StandardNet', 'DeepBind', 
+#---------------------------------------------------------------------------------------------------------
 
-# regularization settings
+all_models = ['DistNet', 'LocalNet'] 
 dropout_status = [True, False]
 l2_status =      [True, False]
 bn_status =      [True, False]
-
-# add gaussian noise
-add_noise =      [True, False]
-
+noise_status =   [False, True, False]
+adv_status =     [False, False, True]
 
 # save path
 results_path = '../results'
 params_path = utils.make_directory(results_path, 'model_params')
-save_path = os.path.join(results_path, 'performance_summary.tsv')
 
-#------------------------------------------------------------------------------------------------
-
-# load dataset
+# dataset path
 data_path = '../data/Synthetic_dataset.h5'
 train, valid, test = helper.load_synthetic_dataset(data_path)
 
@@ -36,16 +36,13 @@ train, valid, test = helper.load_synthetic_dataset(data_path)
 input_shape = list(train['inputs'].shape)
 input_shape[0] = None
 
-#-------------------------------------------------------------------------------------
+with open(os.path.join(results_path, 'performance.tsv'), 'wb') as f:
 
-with open(save_path, 'wb') as f:
+    for i in range(len(dropout_status)):
 
-    for model_name in all_models:
-        
-        for noise in add_noise:
-
-            for i in range(len(dropout_status)):
-
+        for n, noise in enumerate(noise_status):
+            # loop through models
+            for model_name in all_models:
                 tf.reset_default_graph()
                 print('model: ' + model_name)
 
@@ -57,11 +54,14 @@ with open(save_path, 'wb') as f:
                     name += '_l2'
                 if bn_status[i]:
                     name += '_bn'
-
                 if noise:
                     name += '_noise'
+                if adv_status[n]:
+                    name += '_adv'
+                print(name)
 
-                file_path = os.path.join(params_path, name)
+                model_path = utils.make_directory(params_path, model_name)
+                file_path = os.path.join(model_path, name)
 
                 # load model parameters
                 model_layers, optimization, _ = helper.load_model(model_name, 
@@ -78,9 +78,10 @@ with open(save_path, 'wb') as f:
 
                 # initialize session
                 sess = utils.initialize_session()
-                
+
+
                 # set the best parameters
-                nntrainer.set_best_parameters(sess, file_path=file_path+'_best.ckpt')
+                nntrainer.set_best_parameters(sess)#, file_path=file_path+'_last.ckpt')
 
                 # get performance metrics
                 predictions = nntrainer.get_activations(sess, test, 'output')
