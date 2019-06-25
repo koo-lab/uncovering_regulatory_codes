@@ -1,8 +1,8 @@
 # Robust Neural Networks are More Interpretable for Genomics
 
-This is a repository that contains datasets and scripts to reproduce the results of "Robust Neural Networks are More Interpretable for Genomics" by Peter K. Koo, Sharon Qian, Gal Kaplun, Verena Volf, and Dimitris Kalimeris. Code is contributed from all authors on this paper. Email: peter_koo@harvard.edu for questions.
+This is a repository that contains datasets and scripts to reproduce the results of "Robust Neural Networks are More Interpretable for Genomics" by Peter K. Koo, Sharon Qian, Gal Kaplun, Verena Volf, and Dimitris Kalimeris, which was presented at the ICML Workshop for Computational Biology 2019 in Long Beach, CA. A preprint for this work can be found via https://www.biorxiv.org/content/10.1101/657437v1. 
 
-The code here depends on Deepomics, a custom-written, high-level APIs written on top of Tensorflow to seamlessly build, train, test, and evaluate neural network models.  WARNING: Deepomics is a required sub-repository.  To properly clone this repository, please use: 
+Code is contributed from all authors on this paper. Email: peter_koo@harvard.edu for questions. The code here depends on Deepomics, a custom-written, high-level APIs written on top of Tensorflow to seamlessly build, train, test, and evaluate neural network models.  WARNING: Deepomics is a required sub-repository.  To properly clone this repository, please use: 
 
 $ git clone --recursive \url{https://github.com/p-koo/uncovering_regulatory_codes.git}
 
