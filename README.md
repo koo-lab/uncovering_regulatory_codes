@@ -7,9 +7,9 @@ Code is contributed from all authors on this paper. Email: peter_koo@harvard.edu
 $ git clone --recursive \url{https://github.com/p-koo/uncovering_regulatory_codes.git}
 
 #### Dependencies
-* Tensorflow r1.0 or greater (preferably r1.4 or r1.5)
-* Python dependencies: PIL, matplotlib, numpy, scipy, sklearn
-
+* Tensorflow r1.0 or greater (preferably r1.14 or r1.15)
+* Python dependencies: PIL, matplotlib, numpy, scipy (version 1.1.0), sklearn
+* meme suite (5.1.0)
 
 ## Overview of the code
 
